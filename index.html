@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>安卓下载入口</title>
+<meta name="format-detection" content="telephone=no,email=no,address=no">
+<style>
+  :root{--bg:#0f172a;--fg:#e5e7eb;--card:#111827;--accent:#22d3ee;--accent2:#fbbf24;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:560px;background:linear-gradient(180deg,#111827 0%,#0b1220 100%);border:1px solid #243041;border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:center}
+  h1{font-size:22px;margin:0 0 10px}
+  p{font-size:15px;line-height:1.6;margin:0 0 16px;color:#cbd5e1}
+  .btn{display:inline-block;padding:12px 18px;border-radius:12px;border:2px solid var(--accent);text-decoration:none;color:var(--fg);margin:6px 6px;user-select:none}
+  .small{font-size:12px;opacity:.75;margin-top:10px}
+  .tip{display:none;position:fixed;top:10px;right:10px;background:#1e293b;color:#f8fafc;padding:10px 12px;border-radius:12px;border:1px solid #334155;box-shadow:0 6px 16px rgba(0,0,0,.35);z-index:9}
+  .arrow{display:none;position:fixed;top:60px;right:30px;font-size:56px;color:var(--accent2);transform:rotate(-20deg);z-index:8}
+</style>
+</head>
+<body>
+<div id="wxTip" class="tip">点右上角 ···<br>选择 在浏览器中打开</div>
+<div id="arrow" class="arrow">➤</div>
+<div class="wrap">
+  <div class="card">
+    <h1>安卓安装包下载</h1>
+    <p id="state">正在检测环境…</p>
+    <div style="margin-top:6px">
+      <a id="androidBtn" class="btn" href="#" rel="nofollow">安卓直接下载</a>
+      <a id="copyBtn" class="btn" href="javascript:;" rel="nofollow">复制备用链接</a>
+    </div>
+    <p class="small">若未自动跳转，请点击上方按钮。微信内置浏览器会被限制，请先在右上角选择浏览器打开。</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  // === 你的下载地址 ===
+  var ANDROID_URL = "https://wwdd.lanzoul.com/iiLLy34lujad";
+  // ====================
+
+  // 环境检测
+  var ua = navigator.userAgent || "";
+  var isWeChat = /MicroMessenger/i.test(ua);
+  var isQQ = /\bQQ\//i.test(ua) || /MQQBrowser/i.test(ua);
+  var inApp = isWeChat || isQQ; // 常见内置浏览器
+
+  var tip = document.getElementById('wxTip');
+  var arrow = document.getElementById('arrow');
+  var state = document.getElementById('state');
+  var androidBtn = document.getElementById('androidBtn');
+  var copyBtn = document.getElementById('copyBtn');
+
+  // 按钮链接（加时间戳避免缓存）
+  function withTs(url){ return url + (url.indexOf('?')>-1?'&':'?') + 't=' + Date.now(); }
+  androidBtn.href = withTs(ANDROID_URL);
+
+  // 一键复制备用链接
+  copyBtn.addEventListener('click', function(){
+    var url = ANDROID_URL;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function(){
+        copyBtn.textContent = '已复制备用链接';
+        setTimeout(function(){ copyBtn.textContent = '复制备用链接'; }, 1600);
+      }).catch(function(){
+        alert('复制失败，请长按选择复制：\\n' + url);
+      });
+    } else {
+      // 兼容旧环境
+      var ta = document.createElement('textarea');
+      ta.value = url; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); alert('已复制备用链接'); }
+      catch(e){ alert('复制失败，请手动复制：\\n' + url); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  function showOpenInBrowserTip(){
+    tip.style.display = 'block';
+    arrow.style.display = 'block';
+    state.textContent = '检测到内置浏览器，请点右上角 ··· 选择“在浏览器中打开”后再下载';
+  }
+
+  function jump(){
+    // 在内置浏览器里，不强制跳转，防止被拦截；只显示提示与按钮
+    if (inApp) { showOpenInBrowserTip(); return; }
+    // 非内置浏览器，自动跳转
+    state.textContent = '正在跳转下载… 如未跳转请点击“安卓直接下载”';
+    location.replace(withTs(ANDROID_URL));
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    // 先渲染提示/按钮，再稍后自动跳转
+    if (inApp) {
+      showOpenInBrowserTip();
+    } else {
+      setTimeout(jump, 600);
+    }
+  });
+})();
+</script>
+</body>
+</html>
